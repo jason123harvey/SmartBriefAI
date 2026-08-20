@@ -1,6 +1,16 @@
 import axios from 'axios';
 
-const API_BASE_URL = '/api';
+// Determine API base URL based on environment
+const getAPIBaseURL = () => {
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    // Development: use local backend
+    return 'http://localhost:5000/api';
+  }
+  // Production: use same domain
+  return '/api';
+};
+
+const API_BASE_URL = getAPIBaseURL();
 
 const api = axios.create({
   baseURL: API_BASE_URL,

@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: smartbrief-ai-backend
+    runtime: node
+    plan: free
+    buildCommand: cd backend && npm install && cd ../frontend && npm install && npm run build && cd ../backend
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: FRONTEND_URL
+        value: https://smartbrief-ai.onrender.com

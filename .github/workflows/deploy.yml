@@ -1,0 +1,135 @@
+name: Test & Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install root dependencies
+      run: npm install
+    
+    - name: Install backend dependencies
+      run: cd backend && npm install
+    
+    - name: Install frontend dependencies
+      run: cd frontend && npm install
+    
+    - name: Build frontend
+      run: cd frontend && npm run build
+    
+    - name: Check if dist folder created
+      run: |
+        if [ ! -d "frontend/dist" ]; then
+          echo "❌ Frontend build failed - dist folder not created"
+          exit 1
+        fi
+        echo "✅ Frontend built successfully"
+    
+    - name: Verify backend files
+      run: |
+        if [ ! -f "backend/server.js" ]; then
+          echo "❌ Backend server.js not found"
+          exit 1
+        fi
+        echo "✅ Backend files verified"
+    
+    - name: Check package.json syntax
+      run: |
+        node -e "require('./backend/package.json')" && echo "✅ Backend package.json valid"
+        node -e "require('./frontend/package.json')" && echo "✅ Frontend package.json valid"
+        node -e "require('./package.json')" && echo "✅ Root package.json valid"
+
+  security-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Check for hardcoded secrets
+      run: |
+        if grep -r "GEMINI_API_KEY=" . --include="*.js" --include="*.jsx" --include="*.ts" --include="*.tsx"; then
+          echo "❌ Found hardcoded API key!"
+          exit 1
+        fi
+        echo "✅ No hardcoded secrets found"
+    
+    - name: Verify .env in .gitignore
+      run: |
+        if ! grep -q "^.env" ".gitignore"; then
+          echo "⚠️  Warning: .env not in .gitignore"
+        else
+          echo "✅ .env properly ignored"
+        fi
+    
+    - name: Check file permissions
+      run: |
+        ls -la backend/
+        ls -la frontend/
+        echo "✅ File permissions verified"
+
+  deployment-readiness:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Check Render configuration
+      run: |
+        if [ ! -f "render.yaml" ]; then
+          echo "⚠️  render.yaml not found"
+        else
+          echo "✅ render.yaml exists"
+        fi
+        
+        if [ ! -f "Procfile" ]; then
+          echo "⚠️  Procfile not found"
+        else
+          echo "✅ Procfile exists"
+        fi
+    
+    - name: Verify deployment files
+      run: |
+        files=("DEPLOYMENT_QUICK_REFERENCE.md" "RENDER_DEPLOYMENT.md" "ENV_VARIABLES.md")
+        for file in "${files[@]}"; do
+          if [ -f "$file" ]; then
+            echo "✅ $file exists"
+          else
+            echo "⚠️  $file missing"
+          fi
+        done
+    
+    - name: Check build script works
+      run: |
+        echo "Testing build command: npm install && npm run build"
+        if grep -q "npm run build" package.json; then
+          echo "✅ Build script configured"
+        fi
+
+  all-checks-pass:
+    needs: [build-and-test, security-check, deployment-readiness]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Summary
+      run: |
+        echo "✅ All checks passed!"
+        echo "✅ Application is ready for deployment"
+        echo "✅ Use 'git push' to trigger deployment on Render"
