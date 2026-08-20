@@ -1,0 +1,82 @@
+/* Additional App-specific styles */
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app > section {
+  flex: 1;
+}
+
+/* Navbar styles */
+.navbar {
+  background: white;
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+}
+
+.navbar a:hover {
+  color: var(--primary-color) !important;
+  transition: color 0.3s ease;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  :root {
+    --shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  .section {
+    padding: 2rem 0;
+  }
+
+  .btn {
+    padding: 0.65rem 1.25rem;
+    font-size: 0.95rem;
+  }
+
+  .card {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+  }
+
+  .container {
+    padding: 0 1rem;
+  }
+
+  .section {
+    padding: 1.5rem 0;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+
+  textarea {
+    min-height: 200px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
