@@ -38,7 +38,7 @@ export async function summarizeArticle(articleText) {
 
 export async function checkBackendHealth() {
   try {
-    const response = await api.get('/api/health');
+    const response = await api.get('/health');
     console.log('Backend health check response:', response.data);
     return response.data.status === 'Backend is running';
   } catch (error) {
