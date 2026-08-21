@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-const API_BASE_URL = '/api';
+// Fallback to '/api' for local dev (handled by Vite proxy), 
+// but use VITE_API_BASE_URL in production (e.g. "https://your-backend.onrender.com/api")
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL 
+  ? `${import.meta.env.VITE_API_BASE_URL.replace(/\/$/, '')}/api`
+  : '/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -24,7 +28,7 @@ export async function summarizeArticle(articleText) {
       throw new Error(error.response.data?.message || 'Server error');
     } else if (error.request) {
       // Request made but no response
-      throw new Error('No response from server. Make sure backend is running on port 5000.');
+      throw new Error('No response from backend server. Please verify the API status.');
     } else {
       // Error in request setup
       throw new Error(error.message || 'An error occurred');
